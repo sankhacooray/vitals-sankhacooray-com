@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>vitals — Sankha Cooray · nutrition, fasting &amp; metabolism</title>
+<meta name="description" content="Personal field notes on intermittent fasting, autophagy, lean-mass hyper-responder profile, and self-tracked metabolic experiments by Sankha Cooray.">
+<link rel="canonical" href="https://vitals.sankhacooray.com/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="vitals">
+<meta property="og:title" content="vitals — Sankha Cooray · nutrition, fasting &amp; metabolism">
+<meta property="og:description" content="Personal field notes on intermittent fasting, autophagy, lean-mass hyper-responder profile, and self-tracked metabolic experiments.">
+<meta property="og:url" content="https://vitals.sankhacooray.com/">
+<meta property="og:locale" content="en_US">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="vitals — Sankha Cooray · nutrition, fasting &amp; metabolism">
+<meta name="twitter:description" content="Personal field notes on intermittent fasting, autophagy, lean-mass hyper-responder profile, and self-tracked metabolic experiments.">
+
+<meta name="theme-color" content="#0e120a">
+
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #0e120a;
+  --surface: #181c10;
+  --surface2: #222816;
+  --border: #2f361d;
+  --border-soft: #232818;
+  --text: #f2efe2;
+  --text-dim: #aab09a;
+  --text-muted: #6f7560;
+  --gold: #a8c45a;        /* olive */
+  --gold-dim: #768947;
+  --gold-soft: rgba(168,196,90,0.08);
+  --cyan: #e3a94c;        /* amber */
+  --cyan-dim: #a87d33;
+  --cyan-soft: rgba(227,169,76,0.08);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --maxw: 1080px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  background-image:
+    radial-gradient(800px 400px at 20% -10%, rgba(168,196,90,0.06), transparent 60%),
+    radial-gradient(700px 500px at 100% 20%, rgba(227,169,76,0.04), transparent 60%);
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+a { color: inherit; text-decoration: none; }
+
+.site-header { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background: rgba(14,18,10,0.7); border-bottom: 1px solid var(--border-soft); }
+.site-header .inner { max-width: var(--maxw); margin: 0 auto; padding: 18px 28px; display: flex; align-items: center; gap: 32px; }
+.brand { display: flex; align-items: baseline; gap: 10px; }
+.brand-mark { font-family: 'Instrument Serif', serif; font-size: 28px; color: var(--gold); letter-spacing: -0.5px; }
+.brand-tag { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; }
+.nav { margin-left: auto; display: flex; gap: 24px; font-size: 14px; color: var(--text-dim); }
+.nav a:hover { color: var(--text); }
+@media (max-width: 640px) { .nav { display: none; } }
+
+.hero { max-width: var(--maxw); margin: 0 auto; padding: 120px 28px 80px; }
+.hero .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 24px; }
+.hero h1 { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: clamp(44px, 7vw, 84px); line-height: 1.05; letter-spacing: -1.5px; color: var(--text); margin-bottom: 28px; }
+.hero h1 em { color: var(--gold); font-style: italic; }
+.hero .lede { font-size: 19px; color: var(--text-dim); max-width: 640px; margin-bottom: 40px; }
+.hero .meta { display: flex; flex-wrap: wrap; gap: 8px 14px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); }
+.hero .meta span::before { content: "◦"; margin-right: 10px; color: var(--gold-dim); }
+
+.section { max-width: var(--maxw); margin: 0 auto; padding: 72px 28px; border-top: 1px solid var(--border-soft); }
+.section-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 40px; }
+.section-num { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); letter-spacing: 1px; }
+.section h2 { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 36px; letter-spacing: -0.5px; }
+
+.about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+.about-grid p { font-size: 16px; color: var(--text-dim); }
+.about-grid p + p { margin-top: 16px; }
+.about-grid strong { color: var(--text); font-weight: 500; }
+.about-grid .accent { color: var(--gold); }
+@media (max-width: 720px) { .about-grid { grid-template-columns: 1fr; gap: 24px; } }
+
+.protocol { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.proto { background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius-sm); padding: 18px; transition: border-color 0.2s, background 0.2s; }
+.proto:hover { border-color: var(--gold-dim); background: var(--surface2); }
+.proto .label { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+.proto .value { font-family: 'Instrument Serif', serif; font-size: 28px; color: var(--gold); margin-bottom: 6px; }
+.proto .value.cool { color: var(--cyan); }
+.proto .desc { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+
+.card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 22px; transition: border-color 0.2s, transform 0.2s; }
+.card:hover { border-color: var(--border); transform: translateY(-2px); }
+.card .role { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--gold); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; }
+.card .role.cool { color: var(--cyan); }
+.card h3 { font-family: 'Instrument Serif', serif; font-size: 22px; font-weight: 400; margin-bottom: 6px; letter-spacing: -0.2px; }
+.card .where { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+.card p { font-size: 14px; color: var(--text-dim); }
+.card .link { margin-top: 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--gold); letter-spacing: 1px; display: inline-flex; align-items: center; gap: 6px; }
+.card .link.cool { color: var(--cyan); }
+.card .link::after { content: "→"; transition: transform 0.2s; }
+.card .link:hover::after { transform: translateX(3px); }
+.card .link.muted { color: var(--text-muted); pointer-events: none; }
+.card .link.muted::after { content: "·"; }
+
+.beliefs { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.belief { background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius-sm); padding: 18px; display: flex; align-items: flex-start; gap: 14px; transition: border-color 0.2s, background 0.2s; }
+.belief:hover { border-color: var(--gold-dim); background: var(--surface2); }
+.belief .glyph { width: 36px; height: 36px; border-radius: 8px; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-family: 'Instrument Serif', serif; font-size: 18px; color: var(--gold); flex-shrink: 0; }
+.belief .body { flex: 1; min-width: 0; }
+.belief .name { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+.belief .desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+
+.research-intro { font-size: 17px; color: var(--text-dim); max-width: 680px; margin-bottom: 36px; }
+.research-intro .cyan { color: var(--cyan); }
+
+.note { margin-top: 24px; font-size: 13px; color: var(--text-muted); font-style: italic; padding-left: 12px; border-left: 2px solid var(--border); }
+
+.disclaimer { margin-top: 24px; padding: 16px 18px; background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius-sm); font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+.disclaimer strong { color: var(--text); font-weight: 500; }
+
+footer { max-width: var(--maxw); margin: 0 auto; padding: 60px 28px 80px; border-top: 1px solid var(--border-soft); margin-top: 40px; display: flex; flex-wrap: wrap; gap: 24px; align-items: baseline; font-size: 13px; color: var(--text-muted); }
+footer .mark { font-family: 'Instrument Serif', serif; color: var(--gold); font-size: 20px; }
+footer .links { margin-left: auto; display: flex; gap: 20px; }
+footer .links a:hover { color: var(--text); }
+
+.tag { display: inline-block; padding: 3px 10px; border-radius: 999px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; border: 1px solid var(--gold-dim); color: var(--gold); background: var(--gold-soft); }
+.tag.cool { border-color: var(--cyan-dim); color: var(--cyan); background: var(--cyan-soft); }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <div class="brand">
+      <span class="brand-mark">vitals</span>
+      <span class="brand-tag">sankha cooray</span>
+    </div>
+    <nav class="nav">
+      <a href="#about">about</a>
+      <a href="#protocol">protocol</a>
+      <a href="#self-study">self-study</a>
+      <a href="#beliefs">beliefs</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="eyebrow">nutrition · fasting · metabolism</div>
+  <h1>Eating less,<br>watching <em>closer</em>.</h1>
+  <p class="lede">
+    Personal field notes from years of intermittent fasting, lab-report self-study,
+    and the slow business of learning how my own metabolism actually behaves.
+  </p>
+  <div class="meta">
+    <span>Singapore</span>
+    <span>daily IF practitioner</span>
+    <span>lean mass hyper-responder</span>
+  </div>
+</section>
+
+<!-- ─── ABOUT ───────────────────────────────────────────── -->
+<section class="section" id="about">
+  <div class="section-head">
+    <span class="section-num">01</span>
+    <h2>About</h2>
+  </div>
+  <div class="about-grid">
+    <div>
+      <p>
+        For years I've been quietly running my own <strong>nutrition and
+        metabolism experiment</strong>. Daily intermittent fasting, lots of
+        questions about food, and a habit of reading every line of every blood
+        panel that comes back.
+      </p>
+      <p>
+        Somewhere along the way I discovered I'm a
+        <strong class="accent">lean-mass hyper-responder</strong> — the metabolic
+        phenotype where being lean and low-carb sends LDL up while metabolic
+        markers stay clean. Which made me much more interested in the
+        <em>system</em>, not just the number.
+      </p>
+    </div>
+    <div>
+      <p>
+        This page is where I collect those notes — the <strong>protocols</strong>
+        I actually follow, the <strong>self-studies</strong> I've done from my
+        own lab reports, and the <strong>beliefs</strong> the work has nudged
+        me toward.
+      </p>
+      <p>
+        It's a field journal, not a how-to. Everyone's metabolism is its own
+        weather system. Mine is what I have data on.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ─── PROTOCOL ────────────────────────────────────────── -->
+<section class="section" id="protocol">
+  <div class="section-head">
+    <span class="section-num">02</span>
+    <h2>What I Actually Do</h2>
+    <span class="tag">current</span>
+  </div>
+
+  <p class="research-intro">
+    The plain version of the routine — eating windows, training, the boring
+    things that compound.
+  </p>
+
+  <div class="protocol">
+    <div class="proto">
+      <div class="label">eating window</div>
+      <div class="value">~ 6 h</div>
+      <div class="desc">Daily intermittent fasting. The window flexes around training and social food, but the rhythm holds.</div>
+    </div>
+    <div class="proto">
+      <div class="label">fasted hours</div>
+      <div class="value cool">~ 18 h</div>
+      <div class="desc">Long enough most days to brush against autophagy — the body's housekeeping mode.</div>
+    </div>
+    <div class="proto">
+      <div class="label">food bias</div>
+      <div class="value">whole · low-noise</div>
+      <div class="desc">Real food, low ultra-processed share, generous protein, plenty of vegetables.</div>
+    </div>
+    <div class="proto">
+      <div class="label">training</div>
+      <div class="value cool">strength · zone-2</div>
+      <div class="desc">Heavy work for lean mass, easy aerobic for the engine. Most sessions in the fasted state.</div>
+    </div>
+    <div class="proto">
+      <div class="label">tracking</div>
+      <div class="value">weight · scans · panels</div>
+      <div class="desc">Withings scale daily, body-composition scans periodically, full lipid + metabolic panels regularly.</div>
+    </div>
+    <div class="proto">
+      <div class="label">guardrails</div>
+      <div class="value cool">sleep · stress</div>
+      <div class="desc">When sleep slips or stress spikes, the eating window opens. The protocol serves the body, not the other way.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── SELF-STUDY ──────────────────────────────────────── -->
+<section class="section" id="self-study">
+  <div class="section-head">
+    <span class="section-num">03</span>
+    <h2>Self-Studies from Lab Reports</h2>
+  </div>
+
+  <p class="research-intro">
+    A few of the threads I've followed through my own numbers. Each one earned
+    a deeper read than the doctor's three-line summary.
+  </p>
+
+  <div class="card-grid">
+
+    <div class="card">
+      <div class="role">phenotype</div>
+      <h3>Lean-mass hyper-responder</h3>
+      <div class="where">lipid panels · longitudinal</div>
+      <p>
+        Discovered through repeated panels: lean, low-carb, high LDL, clean
+        triglycerides and HDL. The classic LMHR pattern. Tracking how it shifts
+        over years.
+      </p>
+      <span class="link muted">write-up coming</span>
+    </div>
+
+    <div class="card">
+      <div class="role">metabolic</div>
+      <h3>Fasting glucose &amp; HbA1c</h3>
+      <div class="where">routine panels</div>
+      <p>
+        Following the gap between fasting glucose and HbA1c, and what changes
+        the IF window seems to make to both.
+      </p>
+      <span class="link muted">write-up coming</span>
+    </div>
+
+    <div class="card">
+      <div class="role">composition</div>
+      <h3>Body composition trends</h3>
+      <div class="where">Withings + DEXA-style scans</div>
+      <p>
+        Long-running lean-mass vs fat-mass tracking — what holds, what shifts,
+        what training and food adjustments actually move.
+      </p>
+      <span class="link muted">write-up coming</span>
+    </div>
+
+    <div class="card">
+      <div class="role cool">future</div>
+      <h3>Open slot</h3>
+      <div class="where">to be added</div>
+      <p>
+        New self-study threads — micronutrients, sleep tracking, HRV — will be
+        added as they earn enough data to write up.
+      </p>
+      <span class="link muted">to be added</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- ─── BELIEFS ─────────────────────────────────────────── -->
+<section class="section" id="beliefs">
+  <div class="section-head">
+    <span class="section-num">04</span>
+    <h2>Working Beliefs</h2>
+  </div>
+
+  <p class="research-intro">
+    Not advice — just the shorthand I've ended up with after years of
+    self-tracking. They may not survive the next decade of evidence, and
+    that's the point.
+  </p>
+
+  <div class="beliefs">
+    <div class="belief">
+      <div class="glyph">◐</div>
+      <div class="body">
+        <div class="name">Autophagy is worth the hunger</div>
+        <div class="desc">The body's cleanup window seems to earn its keep — for me, daily, modestly. Not a fad, a habit.</div>
+      </div>
+    </div>
+    <div class="belief">
+      <div class="glyph">◌</div>
+      <div class="body">
+        <div class="name">Real food first</div>
+        <div class="desc">If it has an ingredient list longer than its name, treat it as a sometimes food.</div>
+      </div>
+    </div>
+    <div class="belief">
+      <div class="glyph">⚖</div>
+      <div class="body">
+        <div class="name">Track the system, not the number</div>
+        <div class="desc">A single biomarker out of context lies. Patterns across panels tell the truth.</div>
+      </div>
+    </div>
+    <div class="belief">
+      <div class="glyph">↻</div>
+      <div class="body">
+        <div class="name">n = 1 is enough to learn</div>
+        <div class="desc">Population studies steer; my own numbers decide. The two together beat either alone.</div>
+      </div>
+    </div>
+    <div class="belief">
+      <div class="glyph">·</div>
+      <div class="body">
+        <div class="name">Sleep before supplements</div>
+        <div class="desc">No nutrient stack outperforms a good night. Fix the basics first.</div>
+      </div>
+    </div>
+    <div class="belief">
+      <div class="glyph">↗</div>
+      <div class="body">
+        <div class="name">Capability over aesthetics</div>
+        <div class="desc">Can I lift it, run it, recover from it? That's the scoreboard. The mirror is downstream.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    <strong>Note.</strong> This is a personal journal of self-experimentation,
+    not medical advice. Intermittent fasting, dietary changes, and metabolic
+    interventions can affect different bodies very differently. Talk to a
+    qualified clinician before changing your own protocol.
+  </div>
+</section>
+
+<footer>
+  <span class="mark">vitals</span>
+  <span>&copy; 2026 Sankha Cooray · a personal metabolism journal</span>
+  <div class="links">
+    <a href="https://sankhacooray.com" target="_blank" rel="noopener">main site</a>
+    <a href="https://ensemble.sankhacooray.com" target="_blank" rel="noopener">ensemble</a>
+  </div>
+</footer>
+
+</body>
+</html>
