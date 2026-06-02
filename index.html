@@ -139,6 +139,42 @@ footer .links a:hover { color: var(--text); }
 
 .tag { display: inline-block; padding: 3px 10px; border-radius: 999px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; border: 1px solid var(--gold-dim); color: var(--gold); background: var(--gold-soft); }
 .tag.cool { border-color: var(--cyan-dim); color: var(--cyan); background: var(--cyan-soft); }
+
+/* ─── LIVE SIGNAL ───────────────────────────────────────── */
+#live { display: none; }                /* revealed by JS once data loads */
+.tag.live { display: inline-flex; align-items: center; gap: 7px; }
+.tag.live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 0 rgba(168,196,90,0.6); animation: pulse 2s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(168,196,90,0.5);} 70% { box-shadow: 0 0 0 7px rgba(168,196,90,0);} 100% { box-shadow: 0 0 0 0 rgba(168,196,90,0);} }
+@media (prefers-reduced-motion: reduce) { .tag.live::before { animation: none; } }
+
+.vitality-hero { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 16px; }
+.vstat { background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 24px; display: flex; align-items: center; gap: 20px; transition: border-color 0.2s, transform 0.2s; }
+.vstat:hover { border-color: var(--border); transform: translateY(-2px); }
+.vstat .vbody { min-width: 0; }
+.vstat .vlabel { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+.vstat .vbig { font-family: 'Instrument Serif', serif; font-size: 44px; line-height: 1; color: var(--gold); }
+.vstat .vbig small { font-size: 16px; color: var(--text-dim); }
+.vstat.amber .vbig { color: var(--cyan); }
+.vstat .vsub { font-size: 13px; color: var(--text-dim); margin-top: 8px; }
+.vstat .vsub b { color: var(--gold); font-weight: 600; }
+.vstat.amber .vsub b { color: var(--cyan); }
+
+.signal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; margin-top: 16px; }
+.signal { background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 20px; display: flex; gap: 16px; align-items: center; transition: border-color 0.2s, transform 0.2s; }
+.signal:hover { border-color: var(--gold-dim); transform: translateY(-2px); }
+.signal .ring { flex-shrink: 0; }
+.signal .sbody { flex: 1; min-width: 0; }
+.signal .slabel { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); }
+.signal .snum { font-family: 'Instrument Serif', serif; font-size: 30px; line-height: 1.1; color: var(--text); margin-top: 2px; }
+.signal .snum small { font-size: 13px; color: var(--text-dim); font-family: 'DM Sans', sans-serif; }
+.signal .spark { margin-top: 8px; height: 26px; width: 100%; display: block; }
+.signal .sfoot { display: flex; justify-content: space-between; gap: 8px; margin-top: 7px; font-size: 11px; color: var(--text-muted); }
+.signal .sfoot .good { color: var(--gold); }
+.signal .sfoot .warn { color: var(--cyan); }
+
+.live-sync { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); margin-top: 22px; letter-spacing: 0.5px; }
+.live-motiv { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 22px; color: var(--text-dim); max-width: 640px; margin-top: 28px; line-height: 1.4; }
+.live-motiv span { color: var(--gold); }
 </style>
 </head>
 <body>
@@ -154,6 +190,7 @@ footer .links a:hover { color: var(--text); }
       <a href="#protocol">protocol</a>
       <a href="#self-study">self-study</a>
       <a href="#beliefs">beliefs</a>
+      <a href="#live">live</a>
     </nav>
   </div>
 </header>
@@ -383,6 +420,127 @@ footer .links a:hover { color: var(--text); }
     qualified clinician before changing your own protocol.
   </div>
 </section>
+
+<!-- ─── LIVE SIGNAL ─────────────────────────────────────── -->
+<section class="section" id="live">
+  <div class="section-head">
+    <span class="section-num">05</span>
+    <h2>Live Signal</h2>
+    <span class="tag live">live</span>
+  </div>
+
+  <p class="research-intro">
+    Measured, not claimed. These numbers come straight off my
+    <span class="cyan">Withings body scan</span> — the receipts behind the
+    protocol, updated automatically. No edited highlight reel; just what the
+    scale says this week.
+  </p>
+
+  <div class="vitality-hero" id="vitality-hero"></div>
+  <div class="signal-grid" id="signal-grid"></div>
+
+  <p class="live-motiv" id="live-motiv"></p>
+  <p class="live-sync" id="live-sync"></p>
+</section>
+
+<script>
+(function () {
+  // ── Your deployed Apps Script /exec URL (see apps-script/README.md) ──
+  var VITALS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwWUDHuQlI9JbR6ZY-94hHAv8cd7fMKsMW3L9qQ1UHLwS3NKRRYgykMNORfuKEfyx3Crw/exec';
+
+  if (VITALS_ENDPOINT.indexOf('PASTE_YOUR') === 0) return; // not wired yet → stay hidden
+
+  var $ = function (id) { return document.getElementById(id); };
+  var fmtDate = function (s) {
+    return new Date(s * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  // Healthy-band position as a 0–1 fill (lower-is-better metrics inverted).
+  function bandFill(m) {
+    var f = (m.value - m.band[0]) / (m.band[1] - m.band[0]);
+    f = Math.max(0, Math.min(1, f));
+    return m.goodLow ? 1 - f : f;
+  }
+
+  function ring(fill, size) {
+    var r = size / 2 - 5, c = 2 * Math.PI * r, off = c * (1 - fill);
+    var col = fill > 0.5 ? '#a8c45a' : '#e3a94c';
+    var cx = size / 2;
+    return '<svg class="ring" width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">' +
+      '<circle cx="' + cx + '" cy="' + cx + '" r="' + r + '" fill="none" stroke="#2f361d" stroke-width="5"/>' +
+      '<circle cx="' + cx + '" cy="' + cx + '" r="' + r + '" fill="none" stroke="' + col + '" stroke-width="5" stroke-linecap="round"' +
+      ' stroke-dasharray="' + c + '" stroke-dashoffset="' + off + '" transform="rotate(-90 ' + cx + ' ' + cx + ')"/>' +
+      '</svg>';
+  }
+
+  function sparkline(series, goodLow) {
+    if (!series || series.length < 2) return '';
+    var vs = series.map(function (p) { return p.v; });
+    var min = Math.min.apply(null, vs), max = Math.max.apply(null, vs);
+    var span = (max - min) || 1, W = 120, H = 26, n = series.length;
+    var pts = series.map(function (p, i) {
+      var x = (i / (n - 1)) * W;
+      var y = H - ((p.v - min) / span) * (H - 4) - 2;
+      return x.toFixed(1) + ',' + y.toFixed(1);
+    }).join(' ');
+    return '<svg class="spark" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' +
+      '<polyline fill="none" stroke="#768947" stroke-width="1.5" points="' + pts + '"/></svg>';
+  }
+
+  function render(d) {
+    if (!d || !d.ok) return;
+
+    // ── Hero stats ──
+    var hero = '';
+    if (d.vitalityScore != null) {
+      hero += '<div class="vstat">' + ring(d.vitalityScore / 100, 72) +
+        '<div class="vbody"><div class="vlabel">vitality score</div>' +
+        '<div class="vbig">' + d.vitalityScore + '<small>/100</small></div>' +
+        '<div class="vsub">composite of every metric vs. its healthy range</div></div></div>';
+    }
+    if (d.vascularAge && d.vascularAge.value != null && d.vascularAge.delta != null) {
+      var dl = d.vascularAge.delta, younger = dl <= 0;
+      hero += '<div class="vstat amber"><div class="vbody"><div class="vlabel">vascular age</div>' +
+        '<div class="vbig">' + d.vascularAge.value + '<small> yrs</small></div>' +
+        '<div class="vsub">arteries <b>' + Math.abs(dl) + ' yr' + (Math.abs(dl) === 1 ? '' : 's') + ' ' +
+        (younger ? 'younger' : 'older') + '</b> than my calendar age of ' + d.vascularAge.realAge + '</div>' +
+        '</div></div>';
+    }
+    if (d.streakWeeks) {
+      hero += '<div class="vstat"><div class="vbody"><div class="vlabel">consistency</div>' +
+        '<div class="vbig">' + d.streakWeeks + '<small> wks</small></div>' +
+        '<div class="vsub">unbroken weeks of stepping on the scale</div></div></div>';
+    }
+    $('vitality-hero').innerHTML = hero;
+
+    // ── Metric cards ──
+    var grid = '';
+    Object.keys(d.metrics).forEach(function (k) {
+      var m = d.metrics[k], f = bandFill(m);
+      var improving = m.goodLow ? m.trend < 0 : m.trend > 0;
+      var arrow = m.trend === 0 ? '·' : (m.trend > 0 ? '▲' : '▼');
+      var trendCls = m.trend === 0 ? '' : (improving ? 'good' : 'warn');
+      grid += '<div class="signal">' + ring(f, 64) +
+        '<div class="sbody"><div class="slabel">' + m.label + '</div>' +
+        '<div class="snum">' + m.value + ' <small>' + m.unit + '</small></div>' +
+        sparkline(m.series, m.goodLow) +
+        '<div class="sfoot"><span class="' + trendCls + '">' + arrow + ' ' + Math.abs(m.trend) + '</span>' +
+        '<span>healthy ' + m.band[0] + '–' + m.band[1] + '</span></div></div></div>';
+    });
+    $('signal-grid').innerHTML = grid;
+
+    $('live-motiv').innerHTML = 'The body keeps an honest ledger. <span>Show up, measure, repeat</span> — the compounding does the rest.';
+    $('live-sync').textContent = 'synced ' + fmtDate(d.updated) + ' · latest reading ' + fmtDate(d.lastMeasured) + ' · auto-refreshed from Withings';
+
+    $('live').style.display = 'block';   // reveal only when we have real data
+  }
+
+  fetch(VITALS_ENDPOINT, { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(render)
+    .catch(function () { /* stay hidden on failure — never show a broken section */ });
+})();
+</script>
 
 <footer>
   <span class="mark">vitals</span>
