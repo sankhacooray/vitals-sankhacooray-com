@@ -153,7 +153,7 @@ footer .links a:hover { color: var(--text); }
 .tag.cool { border-color: var(--cyan-dim); color: var(--cyan); background: var(--cyan-soft); }
 
 /* ─── LIVE SIGNAL ───────────────────────────────────────── */
-#live { display: none; }                /* revealed by JS once data loads */
+#live-data[hidden] { display: none; }   /* data block revealed by JS once readings load; the rest of the section always shows */
 .tag.live { display: inline-flex; align-items: center; gap: 7px; }
 .tag.live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 0 rgba(168,196,90,0.6); animation: pulse 2s infinite; }
 @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(168,196,90,0.5);} 70% { box-shadow: 0 0 0 7px rgba(168,196,90,0);} 100% { box-shadow: 0 0 0 0 rgba(168,196,90,0);} }
@@ -187,6 +187,32 @@ footer .links a:hover { color: var(--text); }
 .live-sync { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); margin-top: 22px; letter-spacing: 0.5px; }
 .live-motiv { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 22px; color: var(--text-dim); max-width: 640px; margin-top: 28px; line-height: 1.4; }
 .live-motiv span { color: var(--gold); }
+
+/* device showcase + intro */
+.device-row { display: grid; grid-template-columns: minmax(170px, 230px) 1fr; gap: clamp(24px, 4vw, 48px); align-items: center; margin-bottom: 4px; }
+.device-shot { display: block; position: relative; background: transparent; border: 0; border-radius: var(--radius); padding: 22px 22px 18px; text-align: center; transition: transform 0.2s; }
+.device-shot:hover { transform: translateY(-2px); }
+.device-shot img { display: block; width: 100%; height: auto; max-width: 200px; margin: 0 auto; filter: drop-shadow(0 14px 26px rgba(0,0,0,0.45)); }
+.device-cap { display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--gold); }
+.device-intro .research-intro { margin-bottom: 0; }
+
+.building-note { display: flex; gap: 11px; align-items: flex-start; margin-top: 18px; font-size: 14px; color: var(--text-muted); line-height: 1.65; }
+.building-note svg { flex-shrink: 0; margin-top: 3px; color: var(--cyan); }
+.building-note b { color: var(--text-dim); font-weight: 600; }
+
+/* research consent / invitation card */
+.consent-card { display: flex; gap: 18px; align-items: flex-start; margin-top: 30px; background: var(--gold-soft); border: 1px solid var(--gold-dim); border-radius: var(--radius); padding: 24px; }
+.consent-card .cicon { flex-shrink: 0; width: 42px; height: 42px; border-radius: 11px; display: grid; place-items: center; background: rgba(168,196,90,0.12); color: var(--gold); }
+.consent-card .ctag { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); margin-bottom: 7px; }
+.consent-card h3 { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 24px; line-height: 1.2; color: var(--text); margin: 0 0 10px; }
+.consent-card p { font-size: 14px; color: var(--text-dim); line-height: 1.65; margin: 0; max-width: 640px; }
+.consent-card .clink { display: inline-flex; align-items: center; gap: 6px; margin-top: 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--gold); }
+.consent-card .clink:hover { text-decoration: underline; }
+
+@media (max-width: 640px) {
+  .device-row { grid-template-columns: 1fr; }
+  .device-shot { max-width: 240px; margin: 0 auto; }
+}
 
 /* ───────── contact form ───────── */
 .cf-wrap { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: clamp(28px, 5vw, 56px); align-items: start; }
@@ -474,18 +500,52 @@ footer .links a:hover { color: var(--text); }
     <span class="tag live">live</span>
   </div>
 
-  <p class="research-intro">
-    Measured, not claimed. These numbers come straight off my
-    <span class="cyan">Withings body scan</span> — the receipts behind the
-    protocol, updated automatically. No edited highlight reel; just what the
-    scale says this week.
-  </p>
+  <div class="device-row">
+    <a class="device-shot" href="https://www.withings.com/sg/en/body-scan" target="_blank" rel="noopener" title="Withings Body Scan on withings.com">
+      <img src="assets/withings-body-scan.webp" width="661" height="720"
+           alt="Withings Body Scan — smart scale with retractable ECG handle" loading="lazy" />
+      <span class="device-cap">Withings Body Scan &#8599;</span>
+    </a>
+    <div class="device-intro">
+      <p class="research-intro">
+        Measured, not claimed. These numbers come straight off my
+        <span class="cyan">Withings Body Scan</span> — the receipts behind the
+        protocol, updated automatically. No edited highlight reel; just what the
+        scale says this week.
+      </p>
+      <p class="building-note">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6c-.9.8-1.6 1.8-2.1 2.9-1.2-.6-1.8-1.5-2-2.6-.2-1.3.2-2.7.9-3.9 1.5.8 2.7 1.5 3.2 3.6z"/></svg>
+        <span><b>Early days.</b> This live signal is still finding its shape — the dashboard
+        was only just wired to the scale, so the first readings may be sparse or jumpy.
+        Expect the picture to get steadier and more consistent as weeks of data accumulate.</span>
+      </p>
+    </div>
+  </div>
 
-  <div class="vitality-hero" id="vitality-hero"></div>
-  <div class="signal-grid" id="signal-grid"></div>
+  <div id="live-data" hidden>
+    <div class="vitality-hero" id="vitality-hero"></div>
+    <div class="signal-grid" id="signal-grid"></div>
+    <p class="live-motiv" id="live-motiv"></p>
+    <p class="live-sync" id="live-sync"></p>
+  </div>
 
-  <p class="live-motiv" id="live-motiv"></p>
-  <p class="live-sync" id="live-sync"></p>
+  <div class="consent-card">
+    <div class="cicon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-9.5-9C1 9 2.5 5 6 5c2 0 3.2 1.1 4 2.3C10.8 6.1 12 5 14 5c3.5 0 5 4 3.5 7-1.2 2.2-3.3 4.2-5.5 6z"/><path d="m8 12 2.2 2.2L15 9.5"/></svg>
+    </div>
+    <div class="cbody">
+      <div class="ctag">open data &middot; research consent</div>
+      <h3>These readings are yours to study.</h3>
+      <p>
+        I freely consent to my own body-composition and cardiovascular data being used
+        for <strong>research, teaching, and health science</strong>. If you're a medical
+        researcher, clinician, or health-science student and this honest n&#8202;=&#8202;1
+        record could be useful — for a study, a teaching example, or simply a sanity check —
+        I'd be glad to share the underlying export. Curiosity and collaboration welcome.
+      </p>
+      <a class="clink" href="#contact">Reach out &#8594;</a>
+    </div>
+  </div>
 </section>
 
 <script>
@@ -577,7 +637,7 @@ footer .links a:hover { color: var(--text); }
     $('live-motiv').innerHTML = 'The body keeps an honest ledger. <span>Show up, measure, repeat</span> — the compounding does the rest.';
     $('live-sync').textContent = 'synced ' + fmtDate(d.updated) + ' · latest reading ' + fmtDate(d.lastMeasured) + ' · auto-refreshed from Withings';
 
-    $('live').style.display = 'block';   // reveal only when we have real data
+    $('live-data').hidden = false;       // reveal the readings only when we have real data
   }
 
   fetch(VITALS_ENDPOINT, { cache: 'no-store' })
