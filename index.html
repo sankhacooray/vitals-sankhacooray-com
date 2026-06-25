@@ -209,6 +209,13 @@ footer .links a:hover { color: var(--text); }
 .consent-card .clink { display: inline-flex; align-items: center; gap: 6px; margin-top: 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--gold); }
 .consent-card .clink:hover { text-decoration: underline; }
 
+/* ScanWatch 2 — incoming device */
+.sw2-row { margin-top: 42px; padding-top: 38px; border-top: 1px solid var(--border-soft); }
+.device-intro .tag { align-self: flex-start; }
+.datatype-head { margin-top: 22px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--cyan); margin-bottom: 12px; }
+.datatype-list { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.datatype-list li { font-size: 12.5px; color: var(--text-dim); background: var(--cyan-soft); border: 1px solid var(--cyan-dim); border-radius: 999px; padding: 5px 12px; line-height: 1.3; }
+
 @media (max-width: 640px) {
   .device-row { grid-template-columns: 1fr; }
   .device-shot { max-width: 240px; margin: 0 auto; }
@@ -529,6 +536,41 @@ footer .links a:hover { color: var(--text); }
     <p class="live-sync" id="live-sync"></p>
   </div>
 
+  <!-- ─── ScanWatch 2 — incoming continuous layer ─────────── -->
+  <div class="device-row sw2-row">
+    <a class="device-shot" href="https://www.withings.com/sg/en/scanwatch-2" target="_blank" rel="noopener" title="Withings ScanWatch 2 on withings.com">
+      <img src="assets/withings-scanwatch-2.webp" width="557" height="800"
+           alt="Withings ScanWatch 2 — hybrid smartwatch with temperature, SpO₂ and ECG sensors" loading="lazy" />
+      <span class="device-cap">Withings ScanWatch 2 &#8599;</span>
+    </a>
+    <div class="device-intro">
+      <span class="tag cool">incoming &middot; on its way</span>
+      <p class="research-intro" style="margin-top:14px;">
+        A <span class="cyan">Withings ScanWatch 2</span> is on order and arriving soon — about
+        to join the scale as a second always-on sensor. Where the Body Scan is a weekly
+        snapshot, the watch adds the <em>continuous</em> layer: round-the-clock signals
+        from the wrist, in the long stretches between scans.
+      </p>
+      <p class="building-note">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.17a2 2 0 0 0-.59-1.42L12 12l-4.41 4.41A2 2 0 0 0 7 17.83V22"/><path d="M7 2v4.17a2 2 0 0 0 .59 1.42L12 12l4.41-4.41A2 2 0 0 0 17 6.17V2"/></svg>
+        <span><b>Await more insights and data soon.</b> Once it's on the wrist and synced,
+        the metrics below will start flowing into this live signal alongside the scale.
+        Researchers and the merely curious — keep watching this space.</span>
+      </p>
+      <div class="datatype-head">What I'll be posting from the watch</div>
+      <ul class="datatype-list">
+        <li>Continuous heart rate &mdash; 24/7 resting &amp; active</li>
+        <li>Heart-rate variability (HRV)</li>
+        <li>On-demand ECG &amp; atrial-fibrillation screening</li>
+        <li>Blood oxygen (SpO&#8322;) spot checks</li>
+        <li>Body-temperature variation (TempTech24/7)</li>
+        <li>Respiratory rate</li>
+        <li>Sleep architecture &mdash; stages, duration, interruptions</li>
+        <li>Activity, steps &amp; estimated VO&#8322; max / fitness level</li>
+      </ul>
+    </div>
+  </div>
+
   <div class="consent-card">
     <div class="cicon" aria-hidden="true">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-9.5-9C1 9 2.5 5 6 5c2 0 3.2 1.1 4 2.3C10.8 6.1 12 5 14 5c3.5 0 5 4 3.5 7-1.2 2.2-3.3 4.2-5.5 6z"/><path d="m8 12 2.2 2.2L15 9.5"/></svg>
@@ -758,14 +800,11 @@ footer .links a:hover { color: var(--text); }
 })();
 </script>
 
-<footer>
-  <span class="mark">vitals</span>
-  <span>&copy; 2026 Sankha Cooray · a personal metabolism journal</span>
-  <div class="links">
-    <a href="https://sankhacooray.com" target="_blank" rel="noopener">main site</a>
-    <a href="https://ensemble.sankhacooray.com" target="_blank" rel="noopener">ensemble</a>
-  </div>
-</footer>
+  <!-- Shared network footer · cdn.sankhacooray.com (auto-themes to this page) -->
+  <div id="scn-footer"></div>
+  <script async src="https://cdn.sankhacooray.com/js/sankha-footer.js?v=20260625"
+          data-site="vitals.sankhacooray.com"
+          data-tagline="a personal metabolism journal"></script>
 
 <script async src="https://sankhacooray.com/js/sankha-analytics.js"></script>
 </body>
