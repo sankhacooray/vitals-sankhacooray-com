@@ -153,7 +153,7 @@ footer .links a:hover { color: var(--text); }
 .tag.cool { border-color: var(--cyan-dim); color: var(--cyan); background: var(--cyan-soft); }
 
 /* ─── LIVE SIGNAL ───────────────────────────────────────── */
-#live-data[hidden] { display: none; }   /* data block revealed by JS once readings load; the rest of the section always shows */
+#live-data[hidden], #watch-data[hidden], #sw2-teaser[hidden] { display: none; }   /* data blocks revealed / teaser swapped by JS once readings load */
 .tag.live { display: inline-flex; align-items: center; gap: 7px; }
 .tag.live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 0 rgba(168,196,90,0.6); animation: pulse 2s infinite; }
 @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(168,196,90,0.5);} 70% { box-shadow: 0 0 0 7px rgba(168,196,90,0);} 100% { box-shadow: 0 0 0 0 rgba(168,196,90,0);} }
@@ -544,30 +544,39 @@ footer .links a:hover { color: var(--text); }
       <span class="device-cap">Withings ScanWatch 2 &#8599;</span>
     </a>
     <div class="device-intro">
-      <span class="tag cool">incoming &middot; on its way</span>
-      <p class="research-intro" style="margin-top:14px;">
-        A <span class="cyan">Withings ScanWatch 2</span> is on order and arriving soon — about
-        to join the scale as a second always-on sensor. Where the Body Scan is a weekly
-        snapshot, the watch adds the <em>continuous</em> layer: round-the-clock signals
-        from the wrist, in the long stretches between scans.
+      <span class="tag cool" id="sw2-tag">arrived &middot; syncing up</span>
+      <p class="research-intro" id="sw2-intro" style="margin-top:14px;">
+        A <span class="cyan">Withings ScanWatch 2</span> has arrived and is settling onto
+        the wrist — joining the scale as a second always-on sensor. Where the Body Scan
+        is a weekly snapshot, the watch adds the <em>continuous</em> layer:
+        round-the-clock signals from the wrist, in the long stretches between scans.
       </p>
-      <p class="building-note">
-        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.17a2 2 0 0 0-.59-1.42L12 12l-4.41 4.41A2 2 0 0 0 7 17.83V22"/><path d="M7 2v4.17a2 2 0 0 0 .59 1.42L12 12l4.41-4.41A2 2 0 0 0 17 6.17V2"/></svg>
-        <span><b>Await more insights and data soon.</b> Once it's on the wrist and synced,
-        the metrics below will start flowing into this live signal alongside the scale.
-        Researchers and the merely curious — keep watching this space.</span>
-      </p>
-      <div class="datatype-head">What I'll be posting from the watch</div>
-      <ul class="datatype-list">
-        <li>Continuous heart rate &mdash; 24/7 resting &amp; active</li>
-        <li>Heart-rate variability (HRV)</li>
-        <li>On-demand ECG &amp; atrial-fibrillation screening</li>
-        <li>Blood oxygen (SpO&#8322;) spot checks</li>
-        <li>Body-temperature variation (TempTech24/7)</li>
-        <li>Respiratory rate</li>
-        <li>Sleep architecture &mdash; stages, duration, interruptions</li>
-        <li>Activity, steps &amp; estimated VO&#8322; max / fitness level</li>
-      </ul>
+      <div id="sw2-teaser">
+        <p class="building-note">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.17a2 2 0 0 0-.59-1.42L12 12l-4.41 4.41A2 2 0 0 0 7 17.83V22"/><path d="M7 2v4.17a2 2 0 0 0 .59 1.42L12 12l4.41-4.41A2 2 0 0 0 17 6.17V2"/></svg>
+          <span><b>Await more insights and data soon.</b> Now that it's on the wrist,
+          the metrics below will start flowing into this live signal alongside the scale
+          as the first nights and days of data sync through.
+          Researchers and the merely curious — keep watching this space.</span>
+        </p>
+        <div class="datatype-head">What I'll be posting from the watch</div>
+        <ul class="datatype-list">
+          <li>Overnight &amp; resting heart rate</li>
+          <li>Respiratory rate &mdash; nightly average</li>
+          <li>Sleep score &amp; architecture &mdash; deep / light / REM</li>
+          <li>Steps &amp; daily activity</li>
+          <li>Blood oxygen (SpO&#8322;) spot checks</li>
+          <li>Estimated VO&#8322; max / fitness level</li>
+        </ul>
+        <p class="note" style="margin-top:14px;">ECG traces, HRV and TempTech&nbsp;24/7
+        temperature stay in the Withings app for now — the public API doesn't export
+        those yet.</p>
+      </div>
+      <div id="watch-data" hidden>
+        <div class="datatype-head">Live from the wrist</div>
+        <div class="signal-grid" id="watch-grid" style="margin-top:0;"></div>
+        <p class="live-sync" id="watch-sync"></p>
+      </div>
     </div>
   </div>
 
@@ -661,9 +670,35 @@ footer .links a:hover { color: var(--text); }
     $('vitality-hero').innerHTML = hero;
 
     // ── Metric cards ──
+    $('signal-grid').innerHTML = signalCards(d.metrics);
+
+    $('live-motiv').innerHTML = 'The body keeps an honest ledger. <span>Show up, measure, repeat</span> — the compounding does the rest.';
+    $('live-sync').textContent = 'synced ' + fmtDate(d.updated) + ' · latest reading ' + fmtDate(d.lastMeasured) + ' · auto-refreshed from Withings';
+
+    $('live-data').hidden = false;       // reveal the readings only when we have real data
+
+    // ── ScanWatch layer — flip the teaser to live cards once watch data flows ──
+    if (d.watch && d.watch.metrics && Object.keys(d.watch.metrics).length) {
+      var tag = $('sw2-tag');
+      if (tag) { tag.className = 'tag live'; tag.textContent = 'live'; }
+      var intro = $('sw2-intro');
+      if (intro) {
+        intro.innerHTML = 'The <span class="cyan">Withings ScanWatch 2</span> is on the wrist ' +
+          'and reporting. Where the Body Scan is a weekly snapshot, this is the ' +
+          '<em>continuous</em> layer — overnight heart rate, respiratory rate, sleep ' +
+          'architecture and daily movement, synced in automatically between scans.';
+      }
+      $('sw2-teaser').hidden = true;
+      $('watch-grid').innerHTML = signalCards(d.watch.metrics);
+      $('watch-sync').textContent = 'last watch sync ' + fmtDate(d.watch.lastSync) + ' · nightly & daily summaries · auto-refreshed from Withings';
+      $('watch-data').hidden = false;
+    }
+  }
+
+  function signalCards(metrics) {
     var grid = '';
-    Object.keys(d.metrics).forEach(function (k) {
-      var m = d.metrics[k], f = bandFill(m);
+    Object.keys(metrics).forEach(function (k) {
+      var m = metrics[k], f = bandFill(m);
       var improving = m.goodLow ? m.trend < 0 : m.trend > 0;
       var arrow = m.trend === 0 ? '·' : (m.trend > 0 ? '▲' : '▼');
       var trendCls = m.trend === 0 ? '' : (improving ? 'good' : 'warn');
@@ -674,12 +709,7 @@ footer .links a:hover { color: var(--text); }
         '<div class="sfoot"><span class="' + trendCls + '">' + arrow + ' ' + Math.abs(m.trend) + '</span>' +
         '<span>healthy ' + m.band[0] + '–' + m.band[1] + '</span></div></div></div>';
     });
-    $('signal-grid').innerHTML = grid;
-
-    $('live-motiv').innerHTML = 'The body keeps an honest ledger. <span>Show up, measure, repeat</span> — the compounding does the rest.';
-    $('live-sync').textContent = 'synced ' + fmtDate(d.updated) + ' · latest reading ' + fmtDate(d.lastMeasured) + ' · auto-refreshed from Withings';
-
-    $('live-data').hidden = false;       // reveal the readings only when we have real data
+    return grid;
   }
 
   fetch(VITALS_ENDPOINT, { cache: 'no-store' })
