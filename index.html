@@ -184,7 +184,32 @@ footer .links a:hover { color: var(--text); }
 .signal .sfoot .good { color: var(--gold); }
 .signal .sfoot .warn { color: var(--cyan); }
 
-.live-sync { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); margin-top: 22px; letter-spacing: 0.5px; }
+.live-sync { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); margin-top: 22px; letter-spacing: 0.5px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.fresh-pill { display: inline-flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--gold-dim); color: var(--gold); background: var(--gold-soft); }
+.fresh-pill.stale { border-color: var(--cyan-dim); color: var(--cyan); background: var(--cyan-soft); }
+.fresh-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+/* research tools: dataset export + mini history */
+#research-tools[hidden] { display: none; }
+.research-tools { margin-top: 30px; padding-top: 26px; border-top: 1px solid var(--border-soft); }
+.rt-head { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--cyan); margin-bottom: 14px; }
+.rt-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.rt-btn { display: inline-flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.5px; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 11px 16px; transition: border-color .18s ease, transform .12s ease; }
+.rt-btn:hover { border-color: var(--gold); transform: translateY(-1px); }
+.rt-btn svg { color: var(--gold); }
+.rt-note { font-size: 12.5px; color: var(--text-muted); line-height: 1.6; margin-top: 14px; max-width: 640px; }
+.rt-history { margin-top: 20px; }
+.rt-history > summary { cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.5px; color: var(--text-dim); list-style: none; display: inline-flex; align-items: center; gap: 8px; padding: 8px 0; }
+.rt-history > summary::-webkit-details-marker { display: none; }
+.rt-history > summary::before { content: "▸"; color: var(--gold); transition: transform .15s ease; display: inline-block; }
+.rt-history[open] > summary::before { transform: rotate(90deg); }
+.htab-wrap { overflow-x: auto; margin-top: 12px; }
+.htab { border-collapse: collapse; font-size: 12.5px; min-width: 100%; }
+.htab caption { text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); padding: 14px 0 8px; }
+.htab th, .htab td { padding: 6px 12px 6px 0; text-align: right; white-space: nowrap; color: var(--text-dim); border-bottom: 1px solid var(--border-soft); }
+.htab th { text-align: left; color: var(--text); font-weight: 500; }
+.htab td.cur { color: var(--gold); font-weight: 600; }
+.htab .hunit { color: var(--text-muted); font-size: 11px; }
 .live-motiv { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 22px; color: var(--text-dim); max-width: 640px; margin-top: 28px; line-height: 1.4; }
 .live-motiv span { color: var(--gold); }
 
@@ -597,6 +622,30 @@ footer .links a:hover { color: var(--text); }
       <a class="clink" href="#contact">Reach out &#8594;</a>
     </div>
   </div>
+
+  <!-- ─── RESEARCH TOOLS · export + mini history ──────────── -->
+  <div class="research-tools" id="research-tools" hidden>
+    <div class="rt-head">Dataset &middot; for researchers</div>
+    <div class="rt-actions">
+      <a class="rt-btn" id="export-csv" href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+        Download CSV
+      </a>
+      <a class="rt-btn" id="export-json" href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+        Download JSON
+      </a>
+    </div>
+    <p class="rt-note">
+      The CSV is the full-resolution curated history (one row per reading);
+      the JSON mirrors this live snapshot. Percentages, indices and
+      cardiovascular signals only — raw body weight stays private.
+    </p>
+    <details class="rt-history">
+      <summary>Recent readings</summary>
+      <div id="history-tables"></div>
+    </details>
+  </div>
 </section>
 
 <script>
@@ -610,6 +659,27 @@ footer .links a:hover { color: var(--text); }
   var fmtDate = function (s) {
     return new Date(s * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
   };
+  // Human "time since" for the snapshot age.
+  function ago(epoch) {
+    var s = Math.floor(Date.now() / 1000) - epoch;
+    if (s < 90) return 'moments ago';
+    var m = Math.round(s / 60); if (m < 90) return m + ' min ago';
+    var h = Math.round(s / 3600); if (h < 36) return h + ' h ago';
+    return Math.round(s / 86400) + ' days ago';
+  }
+  // Freshness pill: green when the snapshot is within ~90 min, amber when older.
+  function freshPill(updated) {
+    var stale = (Math.floor(Date.now() / 1000) - updated) > 90 * 60;
+    var span = document.createElement('span');
+    span.className = 'fresh-pill' + (stale ? ' stale' : '');
+    span.textContent = stale ? 'refreshing' : 'up to date';
+    return span;
+  }
+  function setSync(el, pillFor, text) {
+    el.textContent = '';
+    el.appendChild(freshPill(pillFor));
+    el.appendChild(document.createTextNode(text));
+  }
 
   // Healthy-band position as a 0–1 fill (lower-is-better metrics inverted).
   function bandFill(m) {
@@ -673,9 +743,13 @@ footer .links a:hover { color: var(--text); }
     $('signal-grid').innerHTML = signalCards(d.metrics);
 
     $('live-motiv').innerHTML = 'The body keeps an honest ledger. <span>Show up, measure, repeat</span> — the compounding does the rest.';
-    $('live-sync').textContent = 'synced ' + fmtDate(d.updated) + ' · latest reading ' + fmtDate(d.lastMeasured) + ' · auto-refreshed from Withings';
+    setSync($('live-sync'), d.updated,
+      'snapshot taken ' + ago(d.updated) + ' (' + fmtDate(d.updated) +
+      ') · latest scale reading ' + fmtDate(d.lastMeasured) + ' · auto-refreshed hourly from Withings');
 
     $('live-data').hidden = false;       // reveal the readings only when we have real data
+
+    renderResearchTools(d);              // export + mini history for researchers
 
     // ── ScanWatch layer — flip the teaser to live cards once watch data flows ──
     if (d.watch && d.watch.metrics && Object.keys(d.watch.metrics).length) {
@@ -690,9 +764,37 @@ footer .links a:hover { color: var(--text); }
       }
       $('sw2-teaser').hidden = true;
       $('watch-grid').innerHTML = signalCards(d.watch.metrics);
-      $('watch-sync').textContent = 'last watch sync ' + fmtDate(d.watch.lastSync) + ' · nightly & daily summaries · auto-refreshed from Withings';
+      setSync($('watch-sync'), d.updated,
+        'snapshot taken ' + ago(d.updated) + ' · last watch sync ' + fmtDate(d.watch.lastSync) +
+        ' · steps & activity are running daily totals, so they trail the Withings app until the next refresh');
       $('watch-data').hidden = false;
     }
+  }
+
+  // Compact history table: metrics as rows, the last 8 readings as columns
+  // (oldest → newest, most-recent bolded). Lets researchers eyeball the trend.
+  function historyTable(title, metrics) {
+    var keys = Object.keys(metrics || {});
+    if (!keys.length) return '';
+    var rows = keys.map(function (k) {
+      var m = metrics[k];
+      var pts = m.series.slice(-8);
+      var cells = pts.map(function (p, i) {
+        return '<td class="' + (i === pts.length - 1 ? 'cur' : '') + '">' + p.v + '</td>';
+      }).join('');
+      return '<tr><th>' + m.label + ' <span class="hunit">' + m.unit + '</span></th>' + cells + '</tr>';
+    }).join('');
+    return '<div class="htab-wrap"><table class="htab"><caption>' + title +
+      ' · last readings (oldest → newest)</caption><tbody>' + rows + '</tbody></table></div>';
+  }
+
+  function renderResearchTools(d) {
+    $('export-csv').href = VITALS_ENDPOINT + '?export=csv';
+    $('export-json').href = VITALS_ENDPOINT + '?export=json';
+    var html = historyTable('Body Scan', d.metrics);
+    if (d.watch && d.watch.metrics) html += historyTable('ScanWatch 2', d.watch.metrics);
+    $('history-tables').innerHTML = html;
+    $('research-tools').hidden = false;
   }
 
   function signalCards(metrics) {
