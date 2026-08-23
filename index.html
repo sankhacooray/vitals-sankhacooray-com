@@ -656,7 +656,12 @@ footer .links a:hover { color: var(--text); }
       <button type="button" class="tr-metric is-on" data-metric="stages">Sleep stages</button>
       <button type="button" class="tr-metric" data-metric="score">Sleep score</button>
       <button type="button" class="tr-metric" data-metric="deep">Deep sleep</button>
+      <button type="button" class="tr-metric" data-metric="nightHr">Night HR</button>
+      <button type="button" class="tr-metric" data-metric="resp">Resp rate</button>
       <button type="button" class="tr-metric" data-metric="steps">Steps</button>
+      <button type="button" class="tr-metric" data-metric="active">Active min</button>
+      <button type="button" class="tr-metric" data-metric="distance">Distance</button>
+      <button type="button" class="tr-metric" data-metric="calories">Calories</button>
     </div>
     <div class="tr-chartwrap" id="tr-chartwrap">
       <svg class="tr-chart" id="tr-chart" viewBox="0 0 760 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Trend chart"></svg>
@@ -911,31 +916,85 @@ footer .links a:hover { color: var(--text); }
   var W = 760, H = 300, PL = 46, PR = 16, PT = 18, PB = 32;
   var plotW = W - PL - PR, plotH = H - PT - PB, baseY = PT + plotH;
 
-  function lastN(arr, n) { return arr.slice(Math.max(0, arr.length - n)); }
+  function lastN(arr, n) { arr = arr || []; return arr.slice(Math.max(0, arr.length - n)); }
   function fmtDay(e) { return new Date(e * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); }
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
   function yFor(v, top) { return PT + plotH - (Math.max(0, v) / top) * plotH; }
   function commas(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
 
   // ── per-metric config: returns {n, dates[], top, gridLabel(v), rects/line svg, tip(i), legend[]} ──
+  // activity metrics are day-indexed; everything else is night-indexed.
+  var ACT = { steps: 1, active: 1, distance: 1, calories: 1 };
+
+  // generic single-series views (bar / line) to avoid repetition.
+  function barView(dates, arr, cfg) {
+    return {
+      n: dates.length, dates: dates, top: cfg.top, gridLabel: cfg.gridLabel, band: cfg.band,
+      draw: barSvg(dates.length, function (i) { return arr[i]; }, cfg.top, cfg.color),
+      tip: function (i) { return { date: fmtDay(dates[i]), rows: cfg.rows(i) }; },
+      legend: cfg.legend
+    };
+  }
+  function lineView(dates, arr, cfg) {
+    return {
+      n: dates.length, dates: dates, top: cfg.top, gridLabel: cfg.gridLabel, band: cfg.band,
+      draw: lineSvg(arr, cfg.top),
+      tip: function (i) { return { date: fmtDay(dates[i]), rows: cfg.rows(i) }; },
+      legend: cfg.legend
+    };
+  }
+  var BAND_SW = 'rgba(168,196,90,0.18)';
+  function orDash(v, suffix) { return v == null || isNaN(v) ? '—' : v + suffix; }
+
   function buildView(metric, days) {
     var d = state.data, s = d.sleep, st = d.steps;
-    if (metric === 'steps') {
-      var days_ = lastN(st.days, days), v = lastN(st.v, days);
-      if (!days_.length) return null;
-      var top = niceStep_(Math.max.apply(null, v));
-      return {
-        n: days_.length, dates: days_, top: top,
+
+    // ── activity (day-indexed) ──
+    if (ACT[metric]) {
+      var srcKey = { steps: 'v', active: 'active', distance: 'distance', calories: 'calories' }[metric];
+      if (!st[srcKey]) return null;                 // field absent (e.g. cache mid-refresh)
+      var adays = lastN(st.days, days);
+      if (!adays.length) return null;
+      if (metric === 'steps') {
+        var v = lastN(st.v, days), topV = niceStep_(maxOf(v));
+        return barView(adays, v, {
+          top: topV, color: COL.steps, band: [7000, 12000],
+          gridLabel: function (x) { return Math.round(x / 100) / 10 + 'k'; },
+          rows: function (i) { return [{ c: COL.steps, k: 'Steps', v: commas(v[i]) }]; },
+          legend: [{ c: COL.steps, t: 'Steps / day' }, { c: BAND_SW, t: 'healthy 7–12k', sq: true }]
+        });
+      }
+      if (metric === 'active') {
+        var av = lastN(st.active, days);
+        return barView(adays, av, {
+          top: niceUp_(maxOf(av), 30), color: COL.rem,
+          gridLabel: function (x) { return Math.round(x) + 'm'; },
+          rows: function (i) { return [{ c: COL.rem, k: 'Active', v: orDash(av[i], ' min') }]; },
+          legend: [{ c: COL.rem, t: 'Active minutes / day · moderate + intense' }]
+        });
+      }
+      if (metric === 'distance') {
+        var dv = lastN(st.distance, days);
+        return barView(adays, dv, {
+          top: niceUp_(maxOf(dv), 2), color: COL.deep,
+          gridLabel: function (x) { return (Math.round(x * 10) / 10) + ''; },
+          rows: function (i) { return [{ c: COL.deep, k: 'Distance', v: orDash(dv[i], ' km') }]; },
+          legend: [{ c: COL.deep, t: 'Distance / day · km' }]
+        });
+      }
+      var cv = lastN(st.calories, days);  // calories
+      return barView(adays, cv, {
+        top: niceUp_(maxOf(cv), 500), color: COL.steps,
         gridLabel: function (x) { return Math.round(x / 100) / 10 + 'k'; },
-        band: [7000, 12000],
-        draw: barSvg(days_.length, function (i) { return v[i]; }, top, COL.steps),
-        tip: function (i) { return { date: fmtDay(days_[i]), rows: [{ c: COL.steps, k: 'Steps', v: commas(v[i]) }] }; },
-        legend: [{ c: COL.steps, t: 'Steps / day' }, { c: 'rgba(168,196,90,0.18)', t: 'healthy 7–12k', sq: true }]
-      };
+        rows: function (i) { return [{ c: COL.steps, k: 'Calories', v: cv[i] == null ? '—' : commas(cv[i]) + ' kcal' }]; },
+        legend: [{ c: COL.steps, t: 'Total calories / day' }]
+      });
     }
-    // sleep-based metrics share the nights axis
+
+    // ── sleep (night-indexed) ──
     var days2 = lastN(s.days, days);
     if (!days2.length) return null;
+
     if (metric === 'stages') {
       var deep = lastN(s.deep, days), light = lastN(s.light, days),
           rem = lastN(s.rem, days), awake = lastN(s.awake, days);
@@ -962,33 +1021,52 @@ footer .links a:hover { color: var(--text); }
     }
     if (metric === 'deep') {
       var deep2 = lastN(s.deep, days);
-      var top2 = niceHours_(Math.max.apply(null, deep2));
-      return {
-        n: days2.length, dates: days2, top: top2,
+      return barView(days2, deep2, {
+        top: niceHours_(Math.max.apply(null, deep2)), color: COL.deep,
         gridLabel: function (x) { return trimH_(x); },
-        draw: barSvg(days2.length, function (i) { return deep2[i]; }, top2, COL.deep),
-        tip: function (i) { return { date: fmtDay(days2[i]), rows: [{ c: COL.deep, k: 'Deep sleep', v: trimH_(deep2[i]) }] }; },
+        rows: function (i) { return [{ c: COL.deep, k: 'Deep sleep', v: trimH_(deep2[i]) }]; },
         legend: [{ c: COL.deep, t: 'Deep sleep / night' }]
-      };
+      });
+    }
+    if (metric === 'nightHr') {
+      if (!s.hrAvg) return null;
+      var hr = lastN(s.hrAvg, days), hrmin = lastN(s.hrMin, days);
+      return lineView(days2, hr, {
+        top: niceUp_(maxOf(hr), 10), band: [40, 65],
+        gridLabel: function (x) { return String(Math.round(x)); },
+        rows: function (i) {
+          var r = [{ c: COL.line, k: 'Night HR', v: orDash(hr[i] == null ? null : Math.round(hr[i]), ' bpm') }];
+          if (hrmin[i] != null) r.push({ c: 'transparent', k: 'Low', v: Math.round(hrmin[i]) + ' bpm' });
+          return r;
+        },
+        legend: [{ c: COL.line, t: 'Overnight avg HR' }, { c: BAND_SW, t: 'healthy 40–65', sq: true }]
+      });
+    }
+    if (metric === 'resp') {
+      if (!s.rr) return null;
+      var rr = lastN(s.rr, days);
+      return lineView(days2, rr, {
+        top: niceUp_(maxOf(rr), 5), band: [12, 20],
+        gridLabel: function (x) { return String(Math.round(x)); },
+        rows: function (i) { return [{ c: COL.line, k: 'Resp rate', v: orDash(rr[i], ' br/min') }]; },
+        legend: [{ c: COL.line, t: 'Respiratory rate' }, { c: BAND_SW, t: 'healthy 12–20', sq: true }]
+      });
     }
     // score → line + area
     var score = lastN(s.score, days);
-    return {
-      n: days2.length, dates: days2, top: 100,
+    return lineView(days2, score, {
+      top: 100, band: [70, 100],
       gridLabel: function (x) { return String(Math.round(x)); },
-      band: [70, 100], bandRaw: true,
-      draw: lineSvg(score, 100),
-      tip: function (i) {
-        return { date: fmtDay(days2[i]), rows: [{ c: COL.line, k: 'Sleep score',
-          v: (score[i] == null ? '—' : Math.round(score[i]) + ' / 100') }] };
-      },
-      legend: [{ c: COL.line, t: 'Sleep score' }, { c: 'rgba(168,196,90,0.18)', t: 'healthy 70–100', sq: true }]
-    };
+      rows: function (i) { return [{ c: COL.line, k: 'Sleep score', v: score[i] == null ? '—' : Math.round(score[i]) + ' / 100' }]; },
+      legend: [{ c: COL.line, t: 'Sleep score' }, { c: BAND_SW, t: 'healthy 70–100', sq: true }]
+    });
   }
 
   // ── nice-number helpers ──
   function niceHours_(m) { return Math.max(1, Math.ceil(m + 0.01)); }
   function niceStep_(m) { return Math.max(2000, Math.ceil(m / 2000) * 2000); }
+  function niceUp_(m, step) { return Math.max(step, Math.ceil((m + 1e-6) / step) * step); }
+  function maxOf(arr) { var m = 0; for (var i = 0; i < arr.length; i++) { var x = arr[i]; if (x != null && !isNaN(x) && x > m) m = x; } return m; }
   function trimH_(v) { return (Math.round(v * 10) / 10) + 'h'; }
 
   // ── svg builders ──
@@ -1075,13 +1153,19 @@ footer .links a:hover { color: var(--text); }
     legend.innerHTML = view.legend.map(function (l) {
       return '<span class="lg"><span class="lg-sw" style="background:' + l.c + (l.sq ? ';border-radius:2px' : '') + '"></span>' + esc(l.t) + '</span>';
     }).join('');
-    var noun = (state.metric === 'steps') ? 'days' : 'nights';
-    var win = state.days === 7 ? 'Last 7 ' + noun : (state.days === 30 ? 'Last 30 ' + noun : 'Last 90 ' + noun);
-    var src = (state.metric === 'steps')
-      ? win + ' · daily step totals from the ScanWatch 2 (running totals trail the app until the next sync)'
-      : win + ' · ' + (state.metric === 'stages' ? 'sleep architecture, hours per night' :
-          state.metric === 'deep' ? 'deep-sleep hours per night' : 'nightly sleep score') + ' · ScanWatch 2';
-    cap.textContent = src + ' · showing ' + view.n + ' with data';
+    var DESC = {
+      stages: 'sleep architecture, hours per night', score: 'nightly sleep score',
+      deep: 'deep-sleep hours per night', nightHr: 'overnight average heart rate',
+      resp: 'nightly respiratory rate', steps: 'daily step totals',
+      active: 'daily active minutes (moderate + intense)', distance: 'daily distance covered',
+      calories: 'total calories burned per day'
+    };
+    var isAct = !!ACT[state.metric];
+    var noun = isAct ? 'days' : 'nights';
+    var win = 'Last ' + state.days + ' ' + noun;
+    var caveat = isAct ? ' (running daily totals — they trail the app until the next sync)' : '';
+    cap.textContent = win + ' · ' + DESC[state.metric] + ' · ScanWatch 2' + caveat +
+      ' · showing ' + view.n + ' with data';
   }
 
   // ── hover tooltip ──
