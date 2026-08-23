@@ -246,6 +246,40 @@ footer .links a:hover { color: var(--text); }
   .device-shot { max-width: 240px; margin: 0 auto; }
 }
 
+/* ─── TRENDS charts ─── */
+#trends[hidden] { display: none; }
+.trends { margin-top: 42px; padding-top: 38px; border-top: 1px solid var(--border-soft); }
+.tr-head { display: flex; flex-wrap: wrap; gap: 16px 20px; align-items: flex-end; justify-content: space-between; }
+.tr-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--cyan); margin-bottom: 8px; }
+.tr-title { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 26px; line-height: 1.1; color: var(--text); margin: 0; }
+.tr-ranges { display: inline-flex; gap: 4px; background: var(--surface); border: 1px solid var(--border-soft); border-radius: 999px; padding: 4px; }
+.tr-range { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-dim); background: transparent; border: 0; border-radius: 999px; padding: 7px 14px; cursor: pointer; transition: background .16s ease, color .16s ease; }
+.tr-range:hover { color: var(--text); }
+.tr-range.is-on { background: var(--gold-soft); color: var(--gold); }
+.tr-metrics { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.tr-metric { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.5px; color: var(--text-dim); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 14px; cursor: pointer; transition: border-color .16s ease, color .16s ease, background .16s ease; }
+.tr-metric:hover { border-color: var(--gold-dim); color: var(--text); }
+.tr-metric.is-on { border-color: var(--gold); color: var(--gold); background: var(--gold-soft); }
+.tr-chartwrap { position: relative; margin-top: 24px; }
+.tr-chart { width: 100%; height: auto; display: block; overflow: visible; }
+.tr-chart text { font-family: 'JetBrains Mono', monospace; }
+.tr-tip { position: absolute; pointer-events: none; z-index: 5; top: 4px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 11px; font-size: 12px; color: var(--text); box-shadow: 0 8px 24px rgba(0,0,0,0.45); min-width: 128px; transform: translateX(-50%); }
+.tr-tip[hidden] { display: none; }
+.tr-tip .tt-date { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 7px; }
+.tr-tip .tt-row { display: flex; align-items: center; gap: 7px; line-height: 1.55; white-space: nowrap; }
+.tr-tip .tt-sw { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+.tr-tip .tt-k { color: var(--text-dim); }
+.tr-tip .tt-v { margin-left: auto; padding-left: 14px; color: var(--text); font-weight: 600; }
+.tr-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 18px; min-height: 14px; }
+.tr-legend .lg { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; letter-spacing: 0.3px; }
+.tr-legend .lg-sw { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+.tr-caption { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); margin-top: 16px; letter-spacing: 0.5px; line-height: 1.6; }
+.tr-empty { font-size: 13px; color: var(--text-muted); font-style: italic; text-align: center; }
+@media (max-width: 640px) {
+  .tr-head { align-items: flex-start; }
+  .tr-ranges { order: 2; }
+}
+
 /* ───────── contact form ───────── */
 .cf-wrap { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: clamp(28px, 5vw, 56px); align-items: start; }
 .cf-intro p { color: var(--text-dim); font-size: 16px; line-height: 1.65; margin: 0 0 22px; }
@@ -605,6 +639,33 @@ footer .links a:hover { color: var(--text); }
     </div>
   </div>
 
+  <!-- ─── TRENDS · weekly / monthly charts ─────────────────── -->
+  <div class="trends" id="trends" hidden>
+    <div class="tr-head">
+      <div>
+        <div class="tr-eyebrow">Trends</div>
+        <h3 class="tr-title">The longer view</h3>
+      </div>
+      <div class="tr-ranges" id="tr-ranges" role="tablist" aria-label="Time range">
+        <button type="button" class="tr-range is-on" data-days="7">Week</button>
+        <button type="button" class="tr-range" data-days="30">Month</button>
+        <button type="button" class="tr-range" data-days="90">90 days</button>
+      </div>
+    </div>
+    <div class="tr-metrics" id="tr-metrics" role="tablist" aria-label="Metric">
+      <button type="button" class="tr-metric is-on" data-metric="stages">Sleep stages</button>
+      <button type="button" class="tr-metric" data-metric="score">Sleep score</button>
+      <button type="button" class="tr-metric" data-metric="deep">Deep sleep</button>
+      <button type="button" class="tr-metric" data-metric="steps">Steps</button>
+    </div>
+    <div class="tr-chartwrap" id="tr-chartwrap">
+      <svg class="tr-chart" id="tr-chart" viewBox="0 0 760 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Trend chart"></svg>
+      <div class="tr-tip" id="tr-tip" hidden></div>
+    </div>
+    <div class="tr-legend" id="tr-legend"></div>
+    <p class="tr-caption" id="tr-caption"></p>
+  </div>
+
   <div class="consent-card">
     <div class="cicon" aria-hidden="true">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-9.5-9C1 9 2.5 5 6 5c2 0 3.2 1.1 4 2.3C10.8 6.1 12 5 14 5c3.5 0 5 4 3.5 7-1.2 2.2-3.3 4.2-5.5 6z"/><path d="m8 12 2.2 2.2L15 9.5"/></svg>
@@ -818,6 +879,278 @@ footer .links a:hover { color: var(--text); }
     .then(function (r) { return r.json(); })
     .then(render)
     .catch(function () { /* stay hidden on failure — never show a broken section */ });
+})();
+</script>
+
+
+<!-- ─── TRENDS · weekly / monthly charts ─────────────────── -->
+<script>
+(function () {
+  var ENDPOINT = 'https://script.google.com/macros/s/AKfycbwWUDHuQlI9JbR6ZY-94hHAv8cd7fMKsMW3L9qQ1UHLwS3NKRRYgykMNORfuKEfyx3Crw/exec';
+  var $ = function (id) { return document.getElementById(id); };
+  var wrap = $('trends');
+  if (!wrap) return;
+
+  // Palette — reuses the site's olive/amber signal colours.
+  var COL = {
+    deep:  '#a8c45a',  // olive (gold)
+    light: '#5f7038',  // deep olive
+    rem:   '#e3a94c',  // amber (cyan)
+    awake: '#3c4525',  // muted
+    line:  '#a8c45a',
+    steps: '#8fa64a',
+    band:  'rgba(168,196,90,0.06)',
+    grid:  '#232818',
+    axis:  '#6f7560'
+  };
+  var STAGE_LABELS = { deep: 'Deep', light: 'Light', rem: 'REM', awake: 'Awake' };
+
+  var state = { data: null, metric: 'stages', days: 7 };
+
+  // ── geometry ──
+  var W = 760, H = 300, PL = 46, PR = 16, PT = 18, PB = 32;
+  var plotW = W - PL - PR, plotH = H - PT - PB, baseY = PT + plotH;
+
+  function lastN(arr, n) { return arr.slice(Math.max(0, arr.length - n)); }
+  function fmtDay(e) { return new Date(e * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); }
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+  function yFor(v, top) { return PT + plotH - (Math.max(0, v) / top) * plotH; }
+  function commas(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+
+  // ── per-metric config: returns {n, dates[], top, gridLabel(v), rects/line svg, tip(i), legend[]} ──
+  function buildView(metric, days) {
+    var d = state.data, s = d.sleep, st = d.steps;
+    if (metric === 'steps') {
+      var days_ = lastN(st.days, days), v = lastN(st.v, days);
+      if (!days_.length) return null;
+      var top = niceStep_(Math.max.apply(null, v));
+      return {
+        n: days_.length, dates: days_, top: top,
+        gridLabel: function (x) { return Math.round(x / 100) / 10 + 'k'; },
+        band: [7000, 12000],
+        draw: barSvg(days_.length, function (i) { return v[i]; }, top, COL.steps),
+        tip: function (i) { return { date: fmtDay(days_[i]), rows: [{ c: COL.steps, k: 'Steps', v: commas(v[i]) }] }; },
+        legend: [{ c: COL.steps, t: 'Steps / day' }, { c: 'rgba(168,196,90,0.18)', t: 'healthy 7–12k', sq: true }]
+      };
+    }
+    // sleep-based metrics share the nights axis
+    var days2 = lastN(s.days, days);
+    if (!days2.length) return null;
+    if (metric === 'stages') {
+      var deep = lastN(s.deep, days), light = lastN(s.light, days),
+          rem = lastN(s.rem, days), awake = lastN(s.awake, days);
+      var totals = days2.map(function (_, i) { return deep[i] + light[i] + rem[i] + awake[i]; });
+      var top = niceHours_(Math.max.apply(null, totals));
+      return {
+        n: days2.length, dates: days2, top: top,
+        gridLabel: function (x) { return trimH_(x); },
+        draw: stackSvg(days2.length, [
+          { arr: deep, c: COL.deep }, { arr: light, c: COL.light },
+          { arr: rem, c: COL.rem }, { arr: awake, c: COL.awake }
+        ], top),
+        tip: function (i) {
+          return { date: fmtDay(days2[i]), rows: [
+            { c: COL.deep, k: 'Deep', v: trimH_(deep[i]) },
+            { c: COL.light, k: 'Light', v: trimH_(light[i]) },
+            { c: COL.rem, k: 'REM', v: trimH_(rem[i]) },
+            { c: COL.awake, k: 'Awake', v: trimH_(awake[i]) },
+            { c: 'transparent', k: 'Total', v: trimH_(totals[i]), strong: true }
+          ] };
+        },
+        legend: ['deep', 'light', 'rem', 'awake'].map(function (k) { return { c: COL[k], t: STAGE_LABELS[k] }; })
+      };
+    }
+    if (metric === 'deep') {
+      var deep2 = lastN(s.deep, days);
+      var top2 = niceHours_(Math.max.apply(null, deep2));
+      return {
+        n: days2.length, dates: days2, top: top2,
+        gridLabel: function (x) { return trimH_(x); },
+        draw: barSvg(days2.length, function (i) { return deep2[i]; }, top2, COL.deep),
+        tip: function (i) { return { date: fmtDay(days2[i]), rows: [{ c: COL.deep, k: 'Deep sleep', v: trimH_(deep2[i]) }] }; },
+        legend: [{ c: COL.deep, t: 'Deep sleep / night' }]
+      };
+    }
+    // score → line + area
+    var score = lastN(s.score, days);
+    return {
+      n: days2.length, dates: days2, top: 100,
+      gridLabel: function (x) { return String(Math.round(x)); },
+      band: [70, 100], bandRaw: true,
+      draw: lineSvg(score, 100),
+      tip: function (i) {
+        return { date: fmtDay(days2[i]), rows: [{ c: COL.line, k: 'Sleep score',
+          v: (score[i] == null ? '—' : Math.round(score[i]) + ' / 100') }] };
+      },
+      legend: [{ c: COL.line, t: 'Sleep score' }, { c: 'rgba(168,196,90,0.18)', t: 'healthy 70–100', sq: true }]
+    };
+  }
+
+  // ── nice-number helpers ──
+  function niceHours_(m) { return Math.max(1, Math.ceil(m + 0.01)); }
+  function niceStep_(m) { return Math.max(2000, Math.ceil(m / 2000) * 2000); }
+  function trimH_(v) { return (Math.round(v * 10) / 10) + 'h'; }
+
+  // ── svg builders ──
+  function barSvg(n, valAt, top, color) {
+    var g = '';
+    for (var i = 0; i < n; i++) {
+      var v = valAt(i); if (v == null || isNaN(v)) continue;
+      var bg = barGeomN(i, n), y = yFor(v, top), h = baseY - y;
+      g += '<rect x="' + f(bg.x) + '" y="' + f(y) + '" width="' + f(bg.w) + '" height="' + f(Math.max(0, h)) +
+           '" rx="1.5" fill="' + color + '"/>';
+    }
+    return g;
+  }
+  function stackSvg(n, layers, top) {
+    var g = '';
+    for (var i = 0; i < n; i++) {
+      var bg = barGeomN(i, n), acc = 0;
+      for (var L = 0; L < layers.length; L++) {
+        var v = layers[L].arr[i]; if (!v) continue;
+        var yTop = yFor(acc + v, top), yBot = yFor(acc, top);
+        g += '<rect x="' + f(bg.x) + '" y="' + f(yTop) + '" width="' + f(bg.w) + '" height="' + f(Math.max(0, yBot - yTop)) +
+             '" fill="' + layers[L].c + '"/>';
+        acc += v;
+      }
+    }
+    return g;
+  }
+  function lineSvg(vals, top) {
+    var pts = [], areaPts = [], n = vals.length, first = null, last = null;
+    for (var i = 0; i < n; i++) {
+      if (vals[i] == null || isNaN(vals[i])) continue;
+      var cx = PL + (i + 0.5) * (plotW / n), y = yFor(vals[i], top);
+      pts.push(f(cx) + ',' + f(y));
+      areaPts.push([cx, y]);
+      if (first === null) first = cx; last = cx;
+    }
+    if (!pts.length) return '';
+    var dots = '';
+    areaPts.forEach(function (p) { dots += '<circle cx="' + f(p[0]) + '" cy="' + f(p[1]) + '" r="2.4" fill="' + COL.line + '"/>'; });
+    var area = '<polygon points="' + f(first) + ',' + f(baseY) + ' ' + pts.join(' ') + ' ' + f(last) + ',' + f(baseY) +
+               '" fill="rgba(168,196,90,0.10)"/>';
+    return area + '<polyline points="' + pts.join(' ') + '" fill="none" stroke="' + COL.line + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' + dots;
+  }
+  function barGeomN(i, n) {
+    var cw = plotW / n, gap = Math.min(cw * 0.34, 10), w = Math.max(1, cw - gap);
+    return { x: PL + i * cw + gap / 2, w: w, cx: PL + (i + 0.5) * cw };
+  }
+  function f(x) { return Math.round(x * 10) / 10; }
+
+  // ── full chart assembly ──
+  function chrome(view) {
+    var g = '', G = 4;
+    // healthy band (draw first, under everything)
+    if (view.band) {
+      var y1 = yFor(Math.min(view.band[1], view.top), view.top), y2 = yFor(view.band[0], view.top);
+      g += '<rect x="' + PL + '" y="' + f(y1) + '" width="' + plotW + '" height="' + f(y2 - y1) + '" fill="' + COL.band + '"/>';
+    }
+    // gridlines + y labels
+    for (var i = 0; i <= G; i++) {
+      var val = view.top * i / G, y = yFor(val, view.top);
+      g += '<line x1="' + PL + '" y1="' + f(y) + '" x2="' + (PL + plotW) + '" y2="' + f(y) + '" stroke="' + COL.grid + '" stroke-width="1"/>';
+      g += '<text x="' + (PL - 8) + '" y="' + f(y + 3.5) + '" text-anchor="end" font-size="10" fill="' + COL.axis + '">' + esc(view.gridLabel(val)) + '</text>';
+    }
+    // x labels (~5 evenly spaced)
+    var n = view.n, stepEvery = Math.max(1, Math.ceil(n / 5));
+    for (var j = 0; j < n; j += stepEvery) {
+      var cx = PL + (j + 0.5) * (plotW / n);
+      g += '<text x="' + f(cx) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10" fill="' + COL.axis + '">' + esc(fmtDay(view.dates[j])) + '</text>';
+    }
+    return g;
+  }
+
+  function render() {
+    var view = buildView(state.metric, state.days);
+    var chart = $('tr-chart'), legend = $('tr-legend'), cap = $('tr-caption');
+    if (!view) {
+      chart.innerHTML = '<text x="' + (W / 2) + '" y="' + (H / 2) + '" text-anchor="middle" font-size="13" fill="' + COL.axis + '" class="tr-empty">No readings in this window yet.</text>';
+      legend.innerHTML = ''; cap.textContent = ''; state.view = null; return;
+    }
+    state.view = view;
+    chart.innerHTML = chrome(view) +
+      '<rect id="tr-hi" x="0" y="' + PT + '" width="0" height="' + plotH + '" fill="rgba(242,239,226,0.05)" visibility="hidden"/>' +
+      view.draw;
+    legend.innerHTML = view.legend.map(function (l) {
+      return '<span class="lg"><span class="lg-sw" style="background:' + l.c + (l.sq ? ';border-radius:2px' : '') + '"></span>' + esc(l.t) + '</span>';
+    }).join('');
+    var noun = (state.metric === 'steps') ? 'days' : 'nights';
+    var win = state.days === 7 ? 'Last 7 ' + noun : (state.days === 30 ? 'Last 30 ' + noun : 'Last 90 ' + noun);
+    var src = (state.metric === 'steps')
+      ? win + ' · daily step totals from the ScanWatch 2 (running totals trail the app until the next sync)'
+      : win + ' · ' + (state.metric === 'stages' ? 'sleep architecture, hours per night' :
+          state.metric === 'deep' ? 'deep-sleep hours per night' : 'nightly sleep score') + ' · ScanWatch 2';
+    cap.textContent = src + ' · showing ' + view.n + ' with data';
+  }
+
+  // ── hover tooltip ──
+  function onMove(e) {
+    var view = state.view; if (!view) return;
+    var box = $('tr-chartwrap').getBoundingClientRect();
+    var scale = box.width / W;
+    var mxSvg = (e.clientX - box.left) / scale;
+    var i = Math.floor((mxSvg - PL) / (plotW / view.n));
+    var tip = $('tr-tip'), hi = $('tr-hi');
+    if (i < 0 || i >= view.n || mxSvg < PL || mxSvg > PL + plotW) { tip.hidden = true; if (hi) hi.setAttribute('visibility', 'hidden'); return; }
+    var cw = plotW / view.n, cx = PL + (i + 0.5) * cw;
+    if (hi) { hi.setAttribute('x', f(PL + i * cw)); hi.setAttribute('width', f(cw)); hi.setAttribute('visibility', 'visible'); }
+    var t = view.tip(i);
+    tip.innerHTML = '<div class="tt-date">' + esc(t.date) + '</div>' + t.rows.map(function (r) {
+      return '<div class="tt-row"><span class="tt-sw" style="background:' + r.c + '"></span>' +
+        '<span class="tt-k">' + esc(r.k) + '</span><span class="tt-v"' + (r.strong ? ' style="color:var(--gold)"' : '') + '>' + esc(r.v) + '</span></div>';
+    }).join('');
+    tip.hidden = false;
+    tip.style.left = (cx * scale) + 'px';
+  }
+  function onLeave() { $('tr-tip').hidden = true; var hi = $('tr-hi'); if (hi) hi.setAttribute('visibility', 'hidden'); }
+
+  // ── controls ──
+  function bind() {
+    $('tr-ranges').addEventListener('click', function (e) {
+      var b = e.target.closest('.tr-range'); if (!b) return;
+      state.days = Number(b.dataset.days);
+      setOn($('tr-ranges'), b, 'tr-range'); render();
+    });
+    $('tr-metrics').addEventListener('click', function (e) {
+      var b = e.target.closest('.tr-metric'); if (!b) return;
+      state.metric = b.dataset.metric;
+      setOn($('tr-metrics'), b, 'tr-metric'); render();
+    });
+    var cw = $('tr-chartwrap');
+    cw.addEventListener('mousemove', onMove);
+    cw.addEventListener('mouseleave', onLeave);
+    cw.addEventListener('touchmove', function (e) { if (e.touches[0]) onMove(e.touches[0]); }, { passive: true });
+    cw.addEventListener('touchend', onLeave);
+  }
+  function setOn(container, btn, cls) {
+    container.querySelectorAll('.' + cls).forEach(function (el) { el.classList.remove('is-on'); });
+    btn.classList.add('is-on');
+  }
+
+  // ── load (lazy, once the live section nears the viewport) ──
+  function load() {
+    fetch(ENDPOINT + '?trends=1', { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.ok || !d.sleep || !d.sleep.days || !d.sleep.days.length) return;
+        state.data = d;
+        wrap.hidden = false;
+        bind();
+        render();
+      })
+      .catch(function () { /* stay hidden on failure */ });
+  }
+
+  var started = false;
+  function begin() { if (started) return; started = true; load(); }
+  var section = wrap.closest('section') || wrap;
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { begin(); io.disconnect(); } });
+    }, { rootMargin: '250px' });
+    io.observe(section);
+  } else { begin(); }
 })();
 </script>
 
