@@ -257,9 +257,15 @@ footer .links a:hover { color: var(--text); }
 .tr-range:hover { color: var(--text); }
 .tr-range.is-on { background: var(--gold-soft); color: var(--gold); }
 .tr-metrics { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
-.tr-metric { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.5px; color: var(--text-dim); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 14px; cursor: pointer; transition: border-color .16s ease, color .16s ease, background .16s ease; }
+.tr-metric { display: inline-flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.5px; color: var(--text-dim); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 14px; cursor: pointer; transition: border-color .16s ease, color .16s ease, background .16s ease; }
 .tr-metric:hover { border-color: var(--gold-dim); color: var(--text); }
 .tr-metric.is-on { border-color: var(--gold); color: var(--gold); background: var(--gold-soft); }
+.tr-metric[hidden] { display: none; }
+.tr-metric svg { width: 12px; height: 12px; flex-shrink: 0; opacity: .62; transition: opacity .16s ease; }
+.tr-metric:hover svg, .tr-metric.is-on svg { opacity: 1; }
+/* scale-sourced filters carry an amber accent so the two sensors read apart */
+.tr-metric[data-src="scale"].is-on { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-soft); }
+.tr-metric[data-src="scale"]:hover { border-color: var(--cyan); }
 .tr-chartwrap { position: relative; margin-top: 24px; }
 .tr-chart { width: 100%; height: auto; display: block; overflow: visible; }
 .tr-chart text { font-family: 'JetBrains Mono', monospace; }
@@ -653,15 +659,24 @@ footer .links a:hover { color: var(--text); }
       </div>
     </div>
     <div class="tr-metrics" id="tr-metrics" role="tablist" aria-label="Metric">
-      <button type="button" class="tr-metric is-on" data-metric="stages">Sleep stages</button>
-      <button type="button" class="tr-metric" data-metric="score">Sleep score</button>
-      <button type="button" class="tr-metric" data-metric="deep">Deep sleep</button>
-      <button type="button" class="tr-metric" data-metric="nightHr">Night HR</button>
-      <button type="button" class="tr-metric" data-metric="resp">Resp rate</button>
-      <button type="button" class="tr-metric" data-metric="steps">Steps</button>
-      <button type="button" class="tr-metric" data-metric="active">Active min</button>
-      <button type="button" class="tr-metric" data-metric="distance">Distance</button>
-      <button type="button" class="tr-metric" data-metric="calories">Calories</button>
+      <!-- ScanWatch 2 (wrist) metrics — flagged with a watch icon by JS -->
+      <button type="button" class="tr-metric is-on" data-src="watch" data-metric="stages">Sleep stages</button>
+      <button type="button" class="tr-metric" data-src="watch" data-metric="score">Sleep score</button>
+      <button type="button" class="tr-metric" data-src="watch" data-metric="deep">Deep sleep</button>
+      <button type="button" class="tr-metric" data-src="watch" data-metric="nightHr">Night HR</button>
+      <button type="button" class="tr-metric" data-src="watch" data-metric="resp">Resp rate</button>
+      <button type="button" class="tr-metric" data-src="watch" data-metric="steps">Steps</button>
+      <button type="button" class="tr-metric" data-src="watch" data-metric="active">Active min</button>
+      <button type="button" class="tr-metric" data-src="watch" data-metric="distance">Distance</button>
+      <button type="button" class="tr-metric" data-src="watch" data-metric="calories">Calories</button>
+      <!-- Body Scan (scale) metrics — flagged with a scale icon by JS; each is
+           hidden until the snapshot confirms the metric has readings -->
+      <button type="button" class="tr-metric" data-src="scale" data-metric="bodyFat" hidden>Body fat</button>
+      <button type="button" class="tr-metric" data-src="scale" data-metric="muscle" hidden>Muscle</button>
+      <button type="button" class="tr-metric" data-src="scale" data-metric="hydration" hidden>Hydration</button>
+      <button type="button" class="tr-metric" data-src="scale" data-metric="visceralFat" hidden>Visceral fat</button>
+      <button type="button" class="tr-metric" data-src="scale" data-metric="vo2max" hidden>VO&#8322; max</button>
+      <button type="button" class="tr-metric" data-src="scale" data-metric="restingHr" hidden>Resting HR</button>
     </div>
     <div class="tr-chartwrap" id="tr-chartwrap">
       <svg class="tr-chart" id="tr-chart" viewBox="0 0 760 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Trend chart"></svg>
@@ -910,7 +925,21 @@ footer .links a:hover { color: var(--text); }
   };
   var STAGE_LABELS = { deep: 'Deep', light: 'Light', rem: 'REM', awake: 'Awake' };
 
-  var state = { data: null, metric: 'stages', days: 7 };
+  // Scale (Body Scan) accents — amber, to read apart from the olive watch charts.
+  var SC_LINE = '#e3a94c', SC_AREA = 'rgba(227,169,76,0.10)',
+      SC_BAND = 'rgba(227,169,76,0.07)', SC_SW = 'rgba(227,169,76,0.22)';
+  var SCALE = { bodyFat: 1, muscle: 1, hydration: 1, visceralFat: 1, vo2max: 1, restingHr: 1 };
+
+  // Sensor glyphs prefixed to each filter chip so the two data sources are
+  // distinguishable at a glance: a wristwatch for ScanWatch 2, a dial scale
+  // for the Body Scan. (lucide-derived paths.)
+  var ICONS = {
+    watch: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="6"/><polyline points="12 10 12 12 13 13"/><path d="m16.13 7.66-.81-4.05a2 2 0 0 0-2-1.61h-2.68a2 2 0 0 0-2 1.61l-.78 4.05"/><path d="m7.88 16.36.8 4a2 2 0 0 0 2 1.61h2.72a2 2 0 0 0 2-1.61l.81-4.05"/></svg>',
+    scale: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 11.5 14 8.2"/><path d="M8.2 15.5a4.8 4.8 0 0 1 7.6 0"/></svg>'
+  };
+
+  var NOW = Math.floor(Date.now() / 1000);
+  var state = { data: null, scale: null, metric: 'stages', days: 7 };
 
   // ── geometry ──
   var W = 760, H = 300, PL = 46, PR = 16, PT = 18, PB = 32;
@@ -947,7 +976,12 @@ footer .links a:hover { color: var(--text); }
   function orDash(v, suffix) { return v == null || isNaN(v) ? '—' : v + suffix; }
 
   function buildView(metric, days) {
-    var d = state.data, s = d.sleep, st = d.steps;
+    // ── scale (Body Scan) — periodic readings, windowed by real time ──
+    if (SCALE[metric]) return scaleView(metric, days);
+
+    var d = state.data;
+    if (!d || !d.sleep || !d.steps) return null;   // watch feed absent/failed
+    var s = d.sleep, st = d.steps;
 
     // ── activity (day-indexed) ──
     if (ACT[metric]) {
@@ -1062,6 +1096,40 @@ footer .links a:hover { color: var(--text); }
     });
   }
 
+  // ── scale (Body Scan) view: line + dots + healthy band, amber-tinted ──
+  // Body scans are periodic (not daily), so we window by actual timestamp and
+  // plot the readings in sequence — a lightweight trend line over the range.
+  function scaleView(key, days) {
+    var sc = state.scale;
+    if (!sc || !sc.metrics || !sc.metrics[key]) return null;
+    var m = sc.metrics[key], all = m.series || [];
+    var cutoff = NOW - days * 86400;
+    var pts = all.filter(function (p) { return p.t >= cutoff; });
+    if (!pts.length) return null;
+    var dates = pts.map(function (p) { return p.t; });
+    var vals = pts.map(function (p) { return p.v; });
+    var band = m.band || [0, 0];
+    var hi = Math.max(maxOf(vals), band[1] || 0);
+    var step = hi > 60 ? 20 : hi > 25 ? 10 : 5;
+    var top = niceUp_(hi, step);
+    var unit = m.unit || '';
+    var suffix = unit === '%' ? '%' : (unit ? ' ' + unit : '');
+    return {
+      n: pts.length, dates: dates, top: top, band: band, bandColor: SC_BAND,
+      gridLabel: function (x) { return String(Math.round(x * 10) / 10); },
+      draw: lineSvg(vals, top, SC_LINE, SC_AREA),
+      tip: function (i) {
+        return { date: fmtDay(dates[i]), rows: [
+          { c: SC_LINE, k: m.label, v: vals[i] == null ? '—' : vals[i] + suffix }
+        ] };
+      },
+      legend: [
+        { c: SC_LINE, t: m.label + (unit ? ' · ' + unit : '') },
+        { c: SC_SW, t: 'healthy ' + band[0] + '–' + band[1], sq: true }
+      ]
+    };
+  }
+
   // ── nice-number helpers ──
   function niceHours_(m) { return Math.max(1, Math.ceil(m + 0.01)); }
   function niceStep_(m) { return Math.max(2000, Math.ceil(m / 2000) * 2000); }
@@ -1094,7 +1162,9 @@ footer .links a:hover { color: var(--text); }
     }
     return g;
   }
-  function lineSvg(vals, top) {
+  function lineSvg(vals, top, color, areaFill) {
+    color = color || COL.line;
+    areaFill = areaFill || 'rgba(168,196,90,0.10)';
     var pts = [], areaPts = [], n = vals.length, first = null, last = null;
     for (var i = 0; i < n; i++) {
       if (vals[i] == null || isNaN(vals[i])) continue;
@@ -1105,10 +1175,10 @@ footer .links a:hover { color: var(--text); }
     }
     if (!pts.length) return '';
     var dots = '';
-    areaPts.forEach(function (p) { dots += '<circle cx="' + f(p[0]) + '" cy="' + f(p[1]) + '" r="2.4" fill="' + COL.line + '"/>'; });
+    areaPts.forEach(function (p) { dots += '<circle cx="' + f(p[0]) + '" cy="' + f(p[1]) + '" r="2.4" fill="' + color + '"/>'; });
     var area = '<polygon points="' + f(first) + ',' + f(baseY) + ' ' + pts.join(' ') + ' ' + f(last) + ',' + f(baseY) +
-               '" fill="rgba(168,196,90,0.10)"/>';
-    return area + '<polyline points="' + pts.join(' ') + '" fill="none" stroke="' + COL.line + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' + dots;
+               '" fill="' + areaFill + '"/>';
+    return area + '<polyline points="' + pts.join(' ') + '" fill="none" stroke="' + color + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' + dots;
   }
   function barGeomN(i, n) {
     var cw = plotW / n, gap = Math.min(cw * 0.34, 10), w = Math.max(1, cw - gap);
@@ -1122,7 +1192,7 @@ footer .links a:hover { color: var(--text); }
     // healthy band (draw first, under everything)
     if (view.band) {
       var y1 = yFor(Math.min(view.band[1], view.top), view.top), y2 = yFor(view.band[0], view.top);
-      g += '<rect x="' + PL + '" y="' + f(y1) + '" width="' + plotW + '" height="' + f(y2 - y1) + '" fill="' + COL.band + '"/>';
+      g += '<rect x="' + PL + '" y="' + f(y1) + '" width="' + plotW + '" height="' + f(y2 - y1) + '" fill="' + (view.bandColor || COL.band) + '"/>';
     }
     // gridlines + y labels
     for (var i = 0; i <= G; i++) {
@@ -1158,13 +1228,18 @@ footer .links a:hover { color: var(--text); }
       deep: 'deep-sleep hours per night', nightHr: 'overnight average heart rate',
       resp: 'nightly respiratory rate', steps: 'daily step totals',
       active: 'daily active minutes (moderate + intense)', distance: 'daily distance covered',
-      calories: 'total calories burned per day'
+      calories: 'total calories burned per day',
+      bodyFat: 'body-fat percentage', muscle: 'muscle mass share of body weight',
+      hydration: 'body-water percentage', visceralFat: 'visceral-fat index',
+      vo2max: 'estimated VO₂ max', restingHr: 'resting heart rate'
     };
-    var isAct = !!ACT[state.metric];
-    var noun = isAct ? 'days' : 'nights';
+    var isScale = !!SCALE[state.metric], isAct = !!ACT[state.metric];
+    var noun = isScale ? 'days' : (isAct ? 'days' : 'nights');
     var win = 'Last ' + state.days + ' ' + noun;
-    var caveat = isAct ? ' (running daily totals — they trail the app until the next sync)' : '';
-    cap.textContent = win + ' · ' + DESC[state.metric] + ' · ScanWatch 2' + caveat +
+    var source = isScale ? 'Body Scan' : 'ScanWatch 2';
+    var caveat = isScale ? ' (periodic scale readings — spaced as measured, not one per day)'
+      : (isAct ? ' (running daily totals — they trail the app until the next sync)' : '');
+    cap.textContent = win + ' · ' + DESC[state.metric] + ' · ' + source + caveat +
       ' · showing ' + view.n + ' with data';
   }
 
@@ -1212,18 +1287,40 @@ footer .links a:hover { color: var(--text); }
     btn.classList.add('is-on');
   }
 
+  // Prefix each filter chip with its sensor glyph; hide chips whose metric has
+  // no data, and re-home the selection if the default ('stages') isn't available.
+  function initChips() {
+    var btns = Array.prototype.slice.call($('tr-metrics').querySelectorAll('.tr-metric'));
+    var anyOn = false, firstOn = null;
+    btns.forEach(function (b) {
+      var ic = ICONS[b.dataset.src];
+      if (ic && !b.querySelector('svg')) b.insertAdjacentHTML('afterbegin', ic);
+      var ok = !!buildView(b.dataset.metric, 1e7);   // huge window → "does this metric exist at all?"
+      b.hidden = !ok;
+      if (ok) { anyOn = true; if (!firstOn) firstOn = b; }
+    });
+    if (!anyOn) return false;
+    var cur = btns.filter(function (b) { return b.dataset.metric === state.metric; })[0];
+    if (!cur || cur.hidden) { state.metric = firstOn.dataset.metric; setOn($('tr-metrics'), firstOn, 'tr-metric'); }
+    return true;
+  }
+
   // ── load (lazy, once the live section nears the viewport) ──
+  // Pull the watch trends feed and the scale snapshot in parallel; the trends
+  // block appears if EITHER sensor has usable data.
   function load() {
-    fetch(ENDPOINT + '?trends=1', { cache: 'no-store' })
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (!d || !d.ok || !d.sleep || !d.sleep.days || !d.sleep.days.length) return;
-        state.data = d;
-        wrap.hidden = false;
-        bind();
-        render();
-      })
-      .catch(function () { /* stay hidden on failure */ });
+    Promise.all([
+      fetch(ENDPOINT + '?trends=1', { cache: 'no-store' }).then(function (r) { return r.json(); }).catch(function () { return null; }),
+      fetch(ENDPOINT, { cache: 'no-store' }).then(function (r) { return r.json(); }).catch(function () { return null; })
+    ]).then(function (res) {
+      var t = res[0], snap = res[1];
+      state.data = (t && t.ok && t.sleep && t.sleep.days && t.sleep.days.length) ? t : null;
+      state.scale = (snap && snap.ok && snap.metrics) ? snap : null;
+      if (!initChips()) return;   // no metrics on either sensor → stay hidden
+      wrap.hidden = false;
+      bind();
+      render();
+    });
   }
 
   var started = false;
